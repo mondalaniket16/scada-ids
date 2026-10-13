@@ -1,5 +1,13 @@
+# Secrets & environment
 .env
+
+# Python virtual environment
 .venv
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
 # Logs
 logs
 *.log
@@ -9,10 +17,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node / Frontend
 node_modules
 dist
 dist-ssr
 *.local
+
+# SQLite databases (local runtime data — not committed)
+backend/scada_ids.db
+backend/test_scada.db
+*.db
+
+# Trained ML model artifacts (large binary, regenerate with pretrain_model.py)
+backend/models/isolation_forest.joblib
+backend/models/*.joblib
+
+# Old LSTM model (replaced by IsolationForest)
+backend/models/lstm_autoencoder.h5
 
 # Editor directories and files
 .vscode/*
