@@ -1,17 +1,17 @@
 """
 End-to-end smoke test: verifies the full workflow programmatically.
 Run from E:\\ids\\backend:
-    .venv\\Scripts\\python.exe e2e_smoke_test.py
+    .venv\\Scripts\\python.exe e2e_smoke_test.py [--port 8000|8001]
 """
 import sys
 import time
 import json
-import threading
+import argparse
 import urllib.request
 import urllib.parse
 import urllib.error
 
-BASE = "http://127.0.0.1:8001"
+BASE = "http://127.0.0.1:8000"
 
 PASS = "\033[92mPASS\033[0m"
 FAIL = "\033[91mFAIL\033[0m"
@@ -41,27 +41,73 @@ def http(method, path, data=None, token=None, content_type=None):
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
-            return resp.status, json.loads(resp.read())
+            return resp.status, json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        return e.code, {}
+        try:
+            return e.code, json.loads(e.read().decode("utf-8"))
+        except Exception:
+            return e.code, {}
+    except urllib.error.URLError as e:
+        return -1, {"error": str(e.reason)}
     except Exception as e:
         return -1, {"error": str(e)}
 
 
+def detect_base_url(custom_base=None, custom_port=None):
+    if custom_base:
+        return custom_base.rstrip("/")
+    if custom_port:
+        return f"http://127.0.0.1:{custom_port}"
+
+    # Try 8000 first (default uvicorn port)
+    for port in (8000, 8001):
+        url = f"http://127.0.0.1:{port}/api/health"
+        try:
+            req = urllib.request.Request(url, method="GET")
+            with urllib.request.urlopen(req, timeout=1.5) as resp:
+                if resp.status == 200:
+                    return f"http://127.0.0.1:{port}"
+        except Exception:
+            pass
+
+    return "http://127.0.0.1:8000"
+
+
 def main():
-    all_ok = True
+    global BASE
+    parser = argparse.ArgumentParser(
+        description="SCADA IDS — End-to-End Smoke Test",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("--base", default=None, help="Backend base URL")
+    parser.add_argument("--port", type=int, default=None, help="Backend port")
+    args = parser.parse_args()
+
+    BASE = detect_base_url(custom_base=args.base, custom_port=args.port)
+
     results = []
 
     print("=" * 55)
     print("SCADA IDS — End-to-End Smoke Test")
+    print(f"Target backend: {BASE}")
     print("=" * 55)
     print()
 
+    # Pre-flight health check probe
+    code, health_data = http("GET", "/api/health")
+    if code != 200:
+        err = health_data.get("error", f"HTTP {code}")
+        print(f"CRITICAL: Backend server is not responding at {BASE} ({err}).")
+        print("Please start the backend before running the smoke test:")
+        print("    cd E:\\ids\\backend")
+        print("    .venv\\Scripts\\Activate.ps1")
+        print("    python -m uvicorn app.main:app --reload")
+        print()
+
     # ── 1. Health check
     print("1. Health check")
-    code, data = http("GET", "/api/health")
-    ok = check("GET /api/health returns 200", code == 200)
-    ok2 = check("status=ok", data.get("status") == "ok")
+    ok = check("GET /api/health returns 200", code == 200, str(health_data.get("error", "")))
+    ok2 = check("status=ok", health_data.get("status") == "ok")
     results += [ok, ok2]
     print()
 
@@ -148,6 +194,9 @@ def main():
             anomaly_rate <= 15.0,
             f"Rate {anomaly_rate:.1f}% is too high — check threshold"
         )
+        results.append(ok3)
+    else:
+        ok3 = check("Normal scenario anomaly rate <= 15%", False, "No detection records accumulated")
         results.append(ok3)
     print()
 
