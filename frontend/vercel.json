@@ -1,13 +1,12 @@
-
 {
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://scada-ids.onrender.com/api/:path*"
-    },
-    {
-      "source": "/ws/:path*",
-      "destination": "https://scada-ids.onrender.com/ws/:path*"
-    }
-  ]
+    "rewrites": [
+        {
+            "source": "/api/:path*",
+            "destination": "https://scada-ids.onrender.com/api/:path*"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
 }
