@@ -20,8 +20,7 @@ export default function Layout() {
   const [simRunning, setSimRunning] = useState(false)
   const [threatLevel, setThreatLevel] = useState('LOW')
 
-  const wsUrl = `ws://${window.location.hostname}:8000/ws/telemetry`
-  const { connected } = useWebSocket(wsUrl)
+  const { connected } = useWebSocket()
 
   const pageTitle = PAGE_TITLES[location.pathname] ?? 'SCADA IDS'
 

@@ -15,8 +15,7 @@ const COLORS: Record<string, string> = {
 export default function TelemetryPage() {
   const [selectedSensors, setSelectedSensors] = useState<string[]>(['LIT101', 'FIT101', 'AIT201'])
   const [chartData, setChartData] = useState<any[]>([])
-  const wsUrl = `ws://${window.location.hostname}:8000/ws/telemetry`
-  const { messages, latestBySensor, connected } = useWebSocket(wsUrl)
+  const { messages, latestBySensor, connected } = useWebSocket()
 
   // Build multi-sensor chart data from WS messages
   useEffect(() => {

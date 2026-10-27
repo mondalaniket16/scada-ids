@@ -28,7 +28,7 @@ export default function AlertsPage() {
   const [page, setPage] = useState(0)
   const PER_PAGE = 20
 
-  const { latestAlerts } = useWebSocket(`ws://${window.location.hostname}:8000/ws/telemetry`)
+  const { latestAlerts } = useWebSocket()
 
   const fetchAlerts = async () => {
     setLoading(true)

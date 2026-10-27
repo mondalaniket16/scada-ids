@@ -1,0 +1,6 @@
+cd E:\ids\backend
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn app.main:app --reload --port 8001
+
+cd E:\ids\frontend
+npm run dev

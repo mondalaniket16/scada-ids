@@ -40,8 +40,7 @@ const SENSOR_COLORS: Record<string, string> = {
 }
 
 export default function DashboardPage() {
-  const wsUrl = `ws://${window.location.hostname}:8000/ws/telemetry`
-  const { messages, latestBySensor, latestAlerts, connected } = useWebSocket(wsUrl)
+  const { messages, latestBySensor, latestAlerts, connected } = useWebSocket()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [chartData, setChartData] = useState<any[]>([])

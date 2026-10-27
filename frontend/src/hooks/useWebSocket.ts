@@ -22,7 +22,12 @@ interface UseWebSocketReturn {
   clearMessages: () => void
 }
 
-export function useWebSocket(url: string): UseWebSocketReturn {
+export const getWsUrl = (path: string = '/ws/telemetry') => {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${protocol}//${window.location.host}${path}`
+}
+
+export function useWebSocket(url: string = getWsUrl()): UseWebSocketReturn {
   const ws = useRef<WebSocket | null>(null)
   const [connected, setConnected] = useState(false)
   const [messages, setMessages] = useState<TelemetryMessage[]>([])

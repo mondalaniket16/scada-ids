@@ -16,7 +16,13 @@ export default function LoginPage() {
     try {
       await login(username, password)
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Login failed. Check credentials.')
+      if (err?.response?.data?.detail) {
+        setError(err.response.data.detail)
+      } else if (err?.response?.status >= 500 || err?.code === 'ERR_NETWORK' || !err?.response) {
+        setError('Cannot connect to backend server. Please verify backend is running.')
+      } else {
+        setError('Login failed. Check credentials.')
+      }
     } finally {
       setLoading(false)
     }
