@@ -22,10 +22,16 @@ interface UseWebSocketReturn {
   clearMessages: () => void
 }
 
+
 export const getWsUrl = (path: string = '/ws/telemetry') => {
+  if (import.meta.env.PROD) {
+    return `wss://scada-ids.onrender.com${path}`
+  }
+
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${protocol}//${window.location.host}${path}`
 }
+
 
 export function useWebSocket(url: string = getWsUrl()): UseWebSocketReturn {
   const ws = useRef<WebSocket | null>(null)
